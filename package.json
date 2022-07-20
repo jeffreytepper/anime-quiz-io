@@ -1,0 +1,25 @@
+{
+  "name": "aniquiz-io",
+  "version": "1.0.0",
+  "description": "Multiplayer anime opening/closing quiz game",
+  "main": "server.js",
+  "scripts": {
+    "test": "test",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jeffreytepper/animequiz-io.git"
+  },
+  "author": "Jeffrey Tepper",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jeffreytepper/animequiz-io/issues"
+  },
+  "homepage": "https://github.com/jeffreytepper/animequiz-io#readme",
+  "dependencies": {
+    "express": "^4.18.1",
+    "socket.io": "^4.5.1",
+    "ws": "^8.8.1"
+  }
+}
