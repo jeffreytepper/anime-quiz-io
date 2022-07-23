@@ -1,0 +1,72 @@
+<html>
+    <head></head>
+    <body>
+        <h1>Welcome to Aniquiz</h1>
+
+        <form id="playerIDForm">
+            <label>What would you like to be called?</label>
+            <input type="text" id="playerID">
+            <input type="submit">
+        </form>
+
+        <h3>Players ready:</h3>
+        <ul id="playerList">
+            
+        </ul>
+
+        <div id="inviteContainer">
+            <p id="inviteLink">Hover over me to see invite link!</p>
+            <button id="copyLink">Copy Link</button>
+        </div> 
+        
+        <button id="startGame">Start Game</button>
+        
+    </body>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+
+        const inviteContainer = document.querySelector('#inviteContainer');
+        const inviteLink = document.querySelector('#inviteLink');
+
+        const copyLink = document.querySelector('#copyLink');
+
+        const playerIDForm = document.querySelector('#playerIDForm');
+        const playerID = document.querySelector('#playerID');
+
+        const playerList = document.querySelector('#playerList');
+
+        inviteContainer.addEventListener('mouseover', e => {
+            inviteLink.innerHTML = location.href;
+        });
+
+        inviteContainer.addEventListener('mouseout', e => {
+            inviteLink.innerHTML = 'Hover over me to see invite link!'
+        });
+
+        copyLink.addEventListener('click', (e) => {
+            navigator.clipboard.writeText(location.href);
+        });
+
+        const socket = io();
+        const roomID = location.pathname.slice(6);
+
+        playerIDForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            socket.emit('new player', { 
+                roomID: roomID,
+                playerID: playerID.value
+            }); 
+
+            playerID.value = '';
+        });
+        
+        socket.on('add player', (playerID) => {
+            console.log(playerID);
+            const player = document.createElement('li');
+            player.innerHTML = playerID;
+            playerList.appendChild(player);
+        });
+
+    </script>
+</html>

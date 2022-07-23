@@ -1,36 +1,19 @@
 <html>
-    <head>
-        <title>Demo Chat</title>
-    </head>
-
+    <head></head>
     <body>
-        <ul id="messages"></ul>
-        <form id="form" action="">
-            <input type="text" id="textbox">
-            <input type="submit">
-        </form>
+        <h1>Welcome to Aniquiz.io</h1>
+        <button id="newGame">New Game</button>
     </body>
-    <script src="/socket.io/socket.io.js"></script>
     <script>
 
-        const socket = io();
+        const newGame = document.querySelector('#newGame');
 
-        const messages = document.querySelector('#messages');
-        const form = document.querySelector("#form");
-        const textbox = document.querySelector("#textbox");
-
-        form.addEventListener('submit', e => {
-            e.preventDefault();
-            if(textbox.value) {
-                socket.emit('chat message', textbox.value);
-                textbox.value = '';
-            }
-        });
-
-        socket.on('chat message', (msg) => {
-            let newChat = document.createElement('li');
-            newChat.innerHTML = msg;
-            messages.append(newChat);
+        newGame.addEventListener('click', (e) => {
+            fetch('/newgame')
+            .then(response => response.json())
+            .then(({ roomID }) => {
+                location.href = `/room/${roomID}`;
+            });
         });
 
     </script>
