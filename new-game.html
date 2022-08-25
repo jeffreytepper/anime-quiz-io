@@ -68,5 +68,13 @@
             playerList.appendChild(player);
         });
 
+        socket.on('player list', (players) => {
+            players.forEach((playerID) => {
+                let player = document.createElement('li');
+                player.innerHTML = playerID;
+                playerList.appendChild(player);
+            });
+        });
+
     </script>
 </html>

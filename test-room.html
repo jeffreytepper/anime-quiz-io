@@ -1,0 +1,83 @@
+<html>
+    <head></head>
+    <body>
+        <h1>
+            Test
+        </h1>
+        <form id='nameForm'>
+            <label>What would you like to be called</label>
+            <input id='nameInput' type='text'>
+            <input type='submit'>
+        </form>
+        <h3>Chat Members:</h3>
+        <ul id='chatMembers'></ul>
+        <h3>Chat Room:</h3>
+        <ul id='chatHistory'></ul>
+        <form id='chatForm'>
+            <input id='chatInput' type='text'>
+        </form>
+    </body>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+
+        const nameForm = document.querySelector('#nameForm');
+        const nameInput = document.querySelector('#nameInput');
+
+        const chatMembers = document.querySelector('#chatMembers');
+        const chatHistory = document.querySelector('#chatHistory');
+
+        const chatForm = document.querySelector('#chatForm');
+        const chatInput = document.querySelector('#chatInput');
+
+        function addChatMember(memberName) {
+            const newChatMember = document.createElement('li');
+            newChatMember.innerHTML = memberName;
+            chatMembers.appendChild(newChatMember);
+        }
+
+        function addNewChat(chat) {
+            const newChat = document.createElement('li');
+            newChat.innerHTML = `${chat.poster} : ${chat.message}`;
+            chatHistory.appendChild(newChat);
+        }
+
+        let socket = io();
+        const roomID = location.pathname.slice(6);
+
+        nameForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = nameInput.value;
+            nameInput.value = '';
+            socket.emit('post member', name);
+        });
+
+        chatForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const chat = chatInput.value;
+            chatInput.value = '';
+            socket.emit('post chat', chat);
+        });
+
+        socket.on('connect', () => {
+            socket.emit('join room', roomID);
+        })
+
+        socket.on('join member', (members, chatLog) => {
+            members.forEach((member) => {
+                addChatMember(member);
+            });
+            chatLog.forEach((chat) => {
+                addNewChat(chat);
+            });
+        });
+
+        socket.on('new member', (member) => {
+            addChatMember(member);
+        });
+
+        socket.on('new chat', (chat) => {
+            addNewChat(chat);
+        });
+
+    </script>
+</html>

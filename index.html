@@ -1,20 +1,17 @@
 <html>
     <head></head>
     <body>
-        <h1>Welcome to Aniquiz.io</h1>
-        <button id="newGame">New Game</button>
+        <h1>Home</h1>
+        <button id="newRoom">New Room</button>
     </body>
     <script>
-
-        const newGame = document.querySelector('#newGame');
-
-        newGame.addEventListener('click', (e) => {
-            fetch('/newgame')
-            .then(response => response.json())
-            .then(({ roomID }) => {
-                location.href = `/room/${roomID}`;
-            });
+        const newRoom = document.querySelector('#newRoom');
+        newRoom.addEventListener('click', (e) => {
+            fetch('/newroom')
+                .then(response => response.text())
+                .then((roomID) => {
+                    location.href = `/room/${roomID}`;
+                });
         });
-
     </script>
 </html>

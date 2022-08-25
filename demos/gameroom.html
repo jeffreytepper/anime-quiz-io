@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+
+        .global-div {
+            margin: auto;
+            max-width: 1400px;
+        }
+        
+        .container {
+            display: flex;
+        }
+
+        .content {
+            margin: 5px;
+            outline: 1px solid black;
+            flex-grow: 1;
+        }
+
+        #game-div {
+            max-width: 1400px;
+            flex-direction: column;
+            margin: auto;
+        }
+
+        #top-div {
+            min-height: 40px;
+        }
+
+        #bottom-div {
+            justify-content: space-between;
+            align-items: row;
+            min-height: 600px;
+        }
+
+        #left-div {
+            min-width: 15%;
+            margin: 5px;
+        }
+
+        #middle-div {
+            flex-grow: 1;
+        }
+
+        #right-div {
+            min-width: 20%;
+            justify-content: space-between;
+            background-color: lightblue;
+        }
+
+        .chat{
+            min-height: 20px;
+        }
+
+        .chat:nth-child(even) {
+            background-color: white;
+        }
+
+        .column{
+            flex-direction: column;
+        }
+
+        .row{
+            flex-direction: row;
+        }
+
+        #chat-log {
+            flex-grow: 1;
+        }
+
+        .player{
+            min-height: 50px;
+            background-color: lightblue;
+        }
+
+        .player:nth-child(even) {
+            background-color: white;
+        }
+        
+        #text-input {
+            margin: 2px;
+            flex-grow: 1;
+            min-height: 20px;
+        }
+
+        #settings-div {
+            max-width: 50%;
+        }
+
+        .label {
+            margin: auto;
+            display: block;
+        }
+
+
+    </style>
+</head>
+<body>
+    <h1>Hello World</h1>
+    <div class="global-div container row" id="lobby-div">
+        <div class="content" id="settings-div">
+            <h3 class="label">Settings</h3>
+            <form class="container column">
+                <label>Rounds</label>
+                <select>
+                    <option>1</option>
+                    <option>2</option>
+                    <option>3</option>
+                    <option>4</option>
+                    <option>5</option>
+                </select>
+                <label>Guess Time</label>
+                <input id="guess-time-input">
+                <label>MAL Link</label>
+                <input id="mal-link-input">
+                <input type="button">
+            </form>
+        </div>
+        <div class="container content" id="players-div">
+            
+        </div>
+    </div>
+    <div class="container" id="game-div">
+        <div class="container content" id="top-div"></div>
+        <div class="container" id="bottom-div">
+            <div class="container column" id="left-div">
+                <div class="player"></div>
+                <div class="player"></div>
+                <div class="player"></div>
+            </div>
+            <div class="container content" id="middle-div">
+                <canvas id="screen"></canvas>
+            </div>
+            <div class="container column content" id="right-div">
+                <div class="container column" id="chat-log">
+                    <div class="chat"></div>
+                    <div class="chat"></div>
+                    <div class="chat"></div>
+                    <div class="chat"></div>
+                    <div class="chat"></div>
+                    <div class="chat"></div>
+                </div>
+                <form class="container row" id="text-form">
+                    <input placeholder="Type your guess here..." id="text-input">
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const socket = io();
+
+    socket.on('connect', () => {
+        console.log(socket.id);
+    });
+</script>
+</html>

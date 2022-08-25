@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Hello World</h1>
+    <button id="connectBtn">Connect Web Socket</button>
+    <button id="room1">Join room 1</button>
+    <button id="room2">Join room 2</button>
+    <button id="room3">Join room 3</button>
+</body>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+
+    const socket = io();
+
+    socket.on('connect', () => {
+        console.log('connected');
+    });
+
+    const room1btn = document.querySelector('#room1');
+    const room2btn = document.querySelector('#room2');
+    const room3btn = document.querySelector('#room3');
+
+    room1btn.addEventListener('click', (e) => {
+        socket.emit('join:room1');
+    });
+
+    room2btn.addEventListener('click', (e) => {
+        socket.emit('join:room2');
+    });
+
+    room3btn.addEventListener('click', (e) => {
+        socket.emit('join:room3');
+    });
+
+
+
+
+
+</script>
+</html>
