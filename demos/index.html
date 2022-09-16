@@ -4,310 +4,34 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
-    <style>
-        .chat-item:nth-child(even){
-            background-color: gainsboro;
-        }
-    </style>
     <title>Document</title>
 </head>
 <body>
-    <div id="root">
-        <div class="container-xxl border rounded mt-5" id="login-section" style="width: 490px;">
-            <form class="d-grid gap-2 my-3">
-                <input type="text" placeholder="Enter your name here" id="playerName" class="form-control">
-                <div id="select-avatar" class="border rounded" style="height: 144px;"></div>
-                <button class="btn btn-success btn-lg" id="playBtn">Play!</button>
-                <button class="btn btn-primary" id="newGameBtn">Create New Game</button>
-            </form>
-        </div>
-        <div class="container-xxl border rounded mt-5" id="lobby-section">
-            <div class="row">
-                <div class="col" id="settings">
-                    <form class="d-grid gap-2 my-3" id="settings-form">
-                        <label class="form-label">Rounds</label>
-                        <select class="form-select" id="rounds-input">
-                            <option value="2">2</option>
-                            <option value="3">3</option>
-                            <option value="4">4</option>
-                            <option selected value="5">5</option>
-                            <option value="6">6</option>
-                            <option value="7">7</option>
-                            <option value="8">8</option>
-                            <option value="9">9</option>
-                            <option value="10">10</option>
-                        </select>
-                        <label class="form-label">Answer time in seconds</label>
-                        <input class="form-control" type="text" id="answer-time-input">
-                        <label class="form-label">Quiz difficulty</label>
-                        <div class="ml-5"> 
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="veasy-check">
-                                <label class="form-check-label">Very Easy (1-99)</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="easy-check">
-                                <label class="form-check-label">Easy (100-499)<label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="med-check">
-                                <label class="form-check-label">Medium (500-1999)<label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="hard-check">
-                                <label class="form-check-label">Hard (2000-4999)<label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="otaku-check">
-                                <label class="form-check-label">Otaku (5000-10000+)<label>
-                            </div>
-                        </div>
-                        <label class="form-label">MAL accounts</label>
-                        <input class="form-control" id="enter-mal-account" placeholder="Enter a mal account here">
-                        <textarea class="form-control" id="mal-accounts" id="mal-accounts-input"></textarea>
-                        <button class="btn btn-success btn-lg" type="submit" id="startBtn">Start!</button>
-                    </form>
-                </div>
-                <div class="col d-flex" id="players-flex"></div>
-            </div>
-            <div class="container border rounded mb-3">
-                <p class="h3" id="invite-link"></p>
-            </div>
-        </div>
-        <div class="container" id="game-section">
-            <div class="row">
-                <div class="col" id="countdown"></div>
-                <div class="col border rounded my-3" id="game-bar" style="height: 50px;"></div>
-            </div>
-            <div class="row"> 
-                <div class="col-2 vtsack" id="players-list"></div>    
-                <div class="col-7">
-                    <canvas style="height: 600px;"></canvas>
-                </div>
-                <div class="col-3 d-flex flex-column border rounded" id="chat-div">
-                    <div class="flex-fill vstack" id="chat-log"></div>
-                    <form class="my-2" id="chat-form">
-                        <input class="form-control" placeholder="Type your guess here..." id="chat-input">
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+    <button id="play">Play</button>
+    <button id="pause">Pause</button>
+    <button id="stop">Stop</button>
+    <script>
+        
+        let audio;
+
+        const playBtn = document.getElementById('play');
+        const pauseBtn = document.getElementById('pause');
+        const stopBtn = document.getElementById('stop');
+
+        playBtn.addEventListener('click', (e) => {
+            audio = new Audio('/audio');
+            fetch('test');
+            audio.play();
+        });
+
+        pauseBtn.addEventListener('click', (e) => {
+            audio.pause();
+        });
+
+        stopBtn.addEventListener('click', (e) => {
+            audio.remove();
+        });
+        
+    </script>
 </body>
-<script src="/socket.io/socket.io.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
-<script>
-    // const playBtn = document.querySelector('#playBtn');
-    // const newGameBtn = document.querySelector('#newGameBtn');
-    // const playerName = document.querySelector('#playerName');
-
-    let roomID = '';
-    let playerList = [];
-
-    function getPlayerName() {
-        let name = playerName.value;
-        playerName.value = '';
-        return name;
-    }
-
-    function getRoomID() {
-        const params = new URLSearchParams(window.location.search);
-        const roomID = params.get("room");
-        return roomID;
-    }
-
-    const playerAvatar = (name) => {
-        return `
-            <div> 
-                <span>${name}</span>
-            </div>
-        `
-    }
-
-    const playerTag = (name) => {
-        return `
-        <div class="row border">
-            <div class="col-3 d-flex align-items-center">
-                <p class="h3 mb-0">#1</p>
-            </div>
-            <div class="col">
-                <p class="m-0 text-center">${name}</p>
-                <p class="m-0 text-center">Score: 0</p>
-            </div>
-        </div>
-        `
-    }
-
-    const chatItem = (name, message) => {
-        return `
-        <div class="chat-item">
-            <span class="fw-bold">${name}: </span>
-            <span>${message}</span>
-        </div>
-        `
-    }
-
-    function initGame() {
-        playerList.forEach((player) => {
-            $('#players-list').append(playerTag(player.username));
-        });
-    };
-
-
-    
-    function initSocket(playerName, roomID) {
-
-        const socket = io();
-
-        socket.on('connect', () => {
-
-            socket.emit('register-player', {
-
-                name: playerName,
-                room: roomID
-
-            }, (sessionData) => {
-                
-                roomID = sessionData.roomID;
-                playerList = sessionData.players;
-                
-                $('#invite-link').html(window.location.origin + window.location.pathname + '?room=' + roomID);
-                playerList.forEach((player) => {
-                    $('#players-flex').append(playerAvatar(player.username));
-                });
-            });
-
-        });
-
-        socket.on('new-player', (newPlayer) => {
-
-            playerList.push(newPlayer);
-            $('#players-flex').append(playerAvatar(newPlayer.username)); 
-
-        });
-
-        socket.on('new-chat', (chatData) => {
-            $('#chat-log').append(chatItem(chatData.sender, chatData.message));
-        });
-
-        socket.on('ready-round', () => {
-            console.log('round starting in 3 sec...');
-        });
-
-        socket.on('start-round', (countdownTime) => {
-            console.log('You have 5 sec to guess the number');
-            const countdown = $('#countdown');
-        });
-
-        socket.on('end-round', (answer) => {
-            console.log(`The number was ${answer}!`);
-        });
-
-        // $('#settings-form').on('submit', (e) => {
-        //     console.log('hello')
-        //     e.preventDefault();
-        //     const settings = {
-        //         numRounds: $('#rounds-input').val(),
-        //         answerTime: $('#answer-time-input').val(),
-        //         difficulty: {
-        //             veryEasy: ($('#veasy-check').val() === 'on') ? True : False,
-        //             easy: ($('#easy-check').val() === 'on') ? True : False,
-        //             med: ($('#med-check').val() === 'on') ? True : False,
-        //             hard: ($('#hard-check').val() === 'on') ? True : False,
-        //             otaku: ($('#otaku-check').val() === 'on') ? True : False,
-        //         },
-        //         malAccounts: $('#mal-accounts').val()
-        //     }
-        // });
-
-        $('#startBtn').on('click', (e) => {
-            e.preventDefault();
-            const settings = {
-                numRounds: parseInt($('#rounds-input').val()),
-                answerTime: parseInt($('#answer-time-input').val()),
-                difficulty: {
-                    veryEasy: $('#veasy-check').prop('checked'),
-                    easy: $('#easy-check').prop('checked'),
-                    med: $('#med-check').prop('checked'),
-                    hard: $('#hard-check').prop('checked'),
-                    otaku: $('#otaku-check').prop('checked'),
-                },
-                malAccounts: $('#mal-accounts').val()
-            }
-            socket.emit('init-game', settings);
-        });
-
-        $('#chat-form').on('submit', (e) => {
-            e.preventDefault();
-            const chatInput = $('#chat-input');
-            socket.emit('send-chat', chatInput.val());
-            chatInput.val('');
-        });
-
-    }
-
-    
-
-    $('#playBtn').on('click', (e) => {
-        e.preventDefault();
-        $('#login-section').hide();
-        $('#lobby-section').show();
-        initSocket(getPlayerName(), getRoomID());
-    });
-
-    $('#startBtn').on('click', (e) => {
-        e.preventDefault();
-        $('#lobby-section').hide();
-        $('#game-section').show();
-        initGame();
-    })
-
-    // $('#newGameBtn').on('click', (e) => {
-    //     e.preventDefault();
-    //     $('#login-section').hide();
-    //     $('#lobby-section').show();
-    //     initSocket(getPlayerName(), getRoomID());
-    // });
-
-    $(document).ready(() => {
-
-        $('#newGameBtn').hide();
-
-        $('#lobby-section').hide();
-        $('#game-section').hide();
-    })
-
-    
-
-    // playBtn.addEventListener('click', (e) => {
-    //     e.preventDefault();
-    //     $('#login-section').hide();
-    //     fetch('/newplayer', {
-    //         method: 'POST',
-    //         headers: {
-    //             'Content-Type': 'application/json;charset=utf-8'
-    //         },
-    //         body: JSON.stringify({
-    //             player: getPlayerName(),
-    //             room: getRoomID()
-    //         })
-    //     });
-    // });
-
-    // newGameBtn.addEventListener('click', (e) => {
-    //     e.preventDefault();
-    //     fetch('/newgameroom', {
-    //         method: 'POST',
-    //         headers: {
-    //             'Content-Type': 'application/json;charset=utf-8'
-    //         },
-    //         body: JSON.stringify({
-    //             player: getPlayerName(),
-    //         })
-    //     });
-    // });
-    
-</script>
 </html>
