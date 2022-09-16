@@ -121,6 +121,10 @@
 <script>
 
     let roomID = '';
+    let game = { 
+        roomID,
+        round : 0
+    };
     let playerList = [];
 
     function getPlayerName() {
@@ -212,6 +216,9 @@
 
         socket.on('ready-round', () => {
 
+            game.round++;
+            audio = new Audio(`/audio?room=${roomID}&round=${game.round}`);
+
             $('#overlay-endround').hide();
             $('#overlay-startround').hide();
             $('#overlay-readyround').fadeIn();
@@ -220,7 +227,7 @@
 
         socket.on('start-round', (countdownTime) => {
 
-            audio = new Audio('/audio');
+            
             audio.play();
 
             $('#overlay-readyround').hide();
@@ -230,7 +237,6 @@
         socket.on('end-round', (endRound) => {
 
             audio.pause();
-            audio.remove();
 
             $('#overlay-endround').text(`The number was ${endRound.answer}`);
             

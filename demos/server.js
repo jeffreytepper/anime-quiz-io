@@ -6,6 +6,19 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
 });
 
+app.get('/audioSync', (req, res) => {
+
+    const headers = {
+        "Content-Type" : "audio/ogg",
+        "Cache-Control" : "no-store",
+        "Expires" : 0
+    };
+
+    res.set(headers);
+
+    res.sendFile('/home/max/development/aniquiz-io/resources/openings/input.ogg');
+});
+
 app.get('/audio', (req, res) => {
 
     console.log('new audio req');

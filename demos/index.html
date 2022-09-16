@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv='cache-control' content='no-cache'>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
 </head>
@@ -13,23 +14,20 @@
     <script>
         
         let audio;
+        let date;
 
         const playBtn = document.getElementById('play');
         const pauseBtn = document.getElementById('pause');
-        const stopBtn = document.getElementById('stop');
 
         playBtn.addEventListener('click', (e) => {
-            audio = new Audio('/audio');
-            fetch('test');
+            date = Date.now();
+            console.log(date);
+            audio = new Audio('/audioSync?buster=' + date);
             audio.play();
         });
 
         pauseBtn.addEventListener('click', (e) => {
             audio.pause();
-        });
-
-        stopBtn.addEventListener('click', (e) => {
-            audio.remove();
         });
         
     </script>
