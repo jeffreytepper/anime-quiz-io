@@ -181,7 +181,7 @@
     function initSocket(playerName, roomID) {
 
         const socket = io();
-        let audio;
+        const audio = new Audio();
 
         socket.on('connect', () => {
 
@@ -216,8 +216,7 @@
 
         socket.on('ready-round', () => {
 
-            game.round++;
-            audio = new Audio(`/audio?room=${roomID}&round=${game.round}`);
+            
 
             $('#overlay-endround').hide();
             $('#overlay-startround').hide();
@@ -227,7 +226,9 @@
 
         socket.on('start-round', (countdownTime) => {
 
-            
+            game.round++;
+            audio.src = `/audio?room=${roomID}&round=${game.round}`;
+            audio.load();
             audio.play();
 
             $('#overlay-readyround').hide();
