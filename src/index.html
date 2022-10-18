@@ -96,7 +96,7 @@
                     <div style="position: relative">
                         <canvas class="w-100" style="height: 600px;"></canvas>
                         <div class="w-100 d-flex align-items-center justify-content-center" id="overlay">
-                            <div class="" id="overlay-readyround">Round starting in 3 sec...</div>
+                            <div class="" id="overlay-readyround">Round starting in 3 sec...<button id="ready-btn">Ready</button></div>
                             <div class="" id="overlay-startround">You have 3 seconds to guess the number</div>
                             <div class="" id="overlay-endround"></div>
                         </div>
@@ -110,10 +110,10 @@
                 </div>
             </div>
         </div>
-        <!-- <div class="container" id="trophy-section">
+        <div class="container" id="trophy-section">
             <div class="text-align-center">Winners</div>
-            <div class="d-flex flex-wrap w-50"></div>
-        </div> -->
+            <div class="d-flex flex-wrap w-50" id="trophy-flex"></div>
+        </div>
     </div>
 </body>
 <script src="/socket.io/socket.io.js"></script>
@@ -143,6 +143,15 @@
         return `
             <div> 
                 <span>${name}</span>
+            </div>
+        `
+    }
+
+    const trophyTag = (player) => {
+        return `
+            <div>
+                <div>${player.username}</div>
+                <div>${player.score}</div>
             </div>
         `
     }
@@ -177,11 +186,20 @@
     };
 
 
+
     
     function initSocket(playerName, roomID) {
 
         const socket = io();
-        const audio = new Audio();
+        let audio = new Audio();
+
+        audio.addEventListener('playing', () => {
+            console.log('playing');
+        });
+
+        $('#ready-btn').on('click', (e) => {
+            socket.emit('ready-up');
+        });
 
         socket.on('connect', () => {
 
@@ -216,8 +234,6 @@
 
         socket.on('ready-round', () => {
 
-            
-
             $('#overlay-endround').hide();
             $('#overlay-startround').hide();
             $('#overlay-readyround').fadeIn();
@@ -233,13 +249,15 @@
 
             $('#overlay-readyround').hide();
             $('#overlay-startround').fadeIn();
+
+
         });
 
         socket.on('end-round', (endRound) => {
 
             audio.pause();
 
-            $('#overlay-endround').text(`The number was ${endRound.answer}`);
+            $('#overlay-endround').text(`The anime was ${endRound.answer}`);
             
             endRound.players.forEach((player) => {
                 $(`#player-${player.username}-score`).text(`Score: ${player.score}`);
@@ -247,6 +265,17 @@
 
             $('#overlay-endround').fadeIn();
             $('#overlay-startround').hide();
+        });
+
+        socket.on('end-game', () => {
+            $('#game-section').hide();
+            $('#trophy-section').show();
+            playerList
+            .sort((p1, p2) => p1.score - p2.score)
+            .forEach(player => {
+                $('#trophy-flex').append(trophyTag(player));
+            });
+            
         });
 
         $('#startBtn').on('click', (e) => {
@@ -289,50 +318,14 @@
         initGame();
     });
 
-    // $('#newGameBtn').on('click', (e) => {
-    //     e.preventDefault();
-    //     $('#login-section').hide();
-    //     $('#lobby-section').show();
-    //     initSocket(getPlayerName(), getRoomID());
-    // });
-
     $(document).ready(() => {
 
         $('#newGameBtn').hide();
-
         $('#lobby-section').hide();
         $('#game-section').hide();
-    })
+        $('#trophy-section').hide();
 
-    
-
-    // playBtn.addEventListener('click', (e) => {
-    //     e.preventDefault();
-    //     $('#login-section').hide();
-    //     fetch('/newplayer', {
-    //         method: 'POST',
-    //         headers: {
-    //             'Content-Type': 'application/json;charset=utf-8'
-    //         },
-    //         body: JSON.stringify({
-    //             player: getPlayerName(),
-    //             room: getRoomID()
-    //         })
-    //     });
-    // });
-
-    // newGameBtn.addEventListener('click', (e) => {
-    //     e.preventDefault();
-    //     fetch('/newgameroom', {
-    //         method: 'POST',
-    //         headers: {
-    //             'Content-Type': 'application/json;charset=utf-8'
-    //         },
-    //         body: JSON.stringify({
-    //             player: getPlayerName(),
-    //         })
-    //     });
-    // });
+    });
     
 </script>
 </html>

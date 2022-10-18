@@ -3,13 +3,15 @@ const Round = require('./round');
 
 class Game {
 
-    constructor(roomID) {
+    constructor(roomID, socketio) {
+
         this.roomID = roomID;
         this.settings = {};
         this.players = [];
-        this.round = new Round();
+        this.round = null;
         this.public = false;
         this.eventEmitter = new EventEmitter();
+        this.io = socketio;
 
     }
 
@@ -59,11 +61,11 @@ class Game {
 
         this.round = new Round();
 
-        io.in(this.roomID).emit('ready-round');
+        this.io.in(this.roomID).emit('ready-round');
         this.round.ready();
         await waitTimer(3);
 
-        io.in(this.roomID).emit('start-round');
+        this.io.in(this.roomID).emit('start-round');
         this.round.start();
         await gameTimer(10);
 
@@ -72,7 +74,7 @@ class Game {
             players: this.getPlayersFrontend()
         }
 
-        io.in(this.roomID).emit('end-round', endRound);
+        this.io.in(this.roomID).emit('end-round', endRound);
         this.round.end();
         await waitTimer(3);
 

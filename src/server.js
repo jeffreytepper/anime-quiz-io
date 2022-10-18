@@ -4,8 +4,11 @@ const socketio = require('socket.io');
 const bodyParser = require('body-parser');
 const crypto = require('crypto');
 const fs = require('fs');
+const path = require('path');
 const EventEmitter = require('events');
 const clipAudio = require('./services/clip-audio');
+const { Anime } = require('./models/anime');
+const { default: mongoose } = require('mongoose');
 const port = 3000;
 
 const app = express();
@@ -25,14 +28,15 @@ class Player {
         this.host = host;
         this.room = room;
         this.avatar = {};
+        this.ready = false;
     }
-
 }
 
 class Round {
 
-    constructor(answer, filepath) {
-        this.answer = answer;//Math.ceil(Math.random() * 10);
+    constructor(answers, title, filepath) {
+        this.answers = answers;
+        this.title = title;
         this.filepath = filepath;
         this.active = false;
         this.winners = [];
@@ -41,7 +45,10 @@ class Round {
     }
 
     check(guess) {
-        return guess == this.answer;
+        return this.answers.some(title => {
+            if(guess.length >= 8) return title.includes(guess);
+            else return guess == title;
+        });
     }
 
     addWinner(player) {
@@ -110,13 +117,36 @@ class Game {
 
     }
 
-    chooseOP() {
+    playersReady() {
+        if(this.players.every(player => player.ready)) {
+            this.eventEmitter.emit('ready');
+        }
+    }
 
-        const filepath = '../resources/openings/input.ogg';
+    async chooseOP(minPop, maxPop) {
+
+        const animes = await Anime.find();
+
+        const random = Math.floor(Math.random() * animes.length);
+        const anime = animes[random];
+
+        let answers = [];
+        answers.push(anime.title.romaji);
+        answers.push(anime.title.english);
+        answers.push(anime.title.userPreferred);
+        answers = answers
+            .concat(anime.synonyms)
+            .map((str) => {
+                return str
+                .replace(/[^a-zA-Z]/g, '')
+                .toLowerCase();
+            })
+            .filter(str => str);
 
         return { 
-            answer: 42, 
-            filepath
+            answer: answers,
+            title: anime.title.userPreferred, 
+            filepath: anime.songs.OP[0].localpath
         };
     }
 
@@ -131,21 +161,28 @@ class Game {
                 this.eventEmitter.once('end', () => pass());
                 setTimeout(() => pass(), time * 1000);
             });
-        } 
+        }
+        
+        const readyCheck = () => {
+            return new Promise(pass => {
+                this.eventEmitter.once('ready', () => pass());
+            })
+        }
 
-        const roundParams = this.chooseOP();
-        this.round = new Round(roundParams.answer, roundParams.filepath);
+        const roundParams = await this.chooseOP();
+        this.round = new Round(roundParams.answer, roundParams.title, roundParams.filepath);
 
+        
         io.in(this.roomID).emit('ready-round');
         this.round.ready();
-        await waitTimer(3);
+        await readyCheck();
 
         io.in(this.roomID).emit('start-round');
         this.round.start();
-        await gameTimer(10);
+        await gameTimer(5);
 
         const endRound = {
-            answer: this.round.answer,
+            answer: this.round.title,
             players: this.getPlayersFrontend()
         }
 
@@ -162,6 +199,7 @@ class Game {
             await this.startRound();
             rounds --;
         }
+        io.in(this.roomID).emit('end-game');
 
     }
 }
@@ -172,33 +210,8 @@ app.get('/', (req, res) => {
 
 app.get('/audio', (req, res) => {
 
-    // const range = req.headers.range;
-    // if(!range) {
-    //     res.status(400).send("Requires Range header");
-    // }
-
-    // console.log('new audio req');
-
-    // const audioPath = '../resources/clipped/output.ogg'
-    // const audioSize = fs.statSync(audioPath).size;
-
-    // const CHUNCK_SIZE = 10 ** 6;
-    // const start = Number(range.replace(/\D/g, ""));
-    // const end = Math.min(start + CHUNCK_SIZE, audioSize - 1);
-
-    // const contentLength = end - start + 1;
-    // const headers = {
-    //     "Content-Range" : `bytes ${start}-${end}/${audioSize}`,
-    //     "Accept-Ranges" : "bytes",
-    //     "Content-Length" : contentLength,
-    //     "Content-Type" : "audio/ogg",
-    // };
-
-    // res.writeHead(206, headers);
-
-    // const audioStream = fs.createReadStream(audioPath, { start, end });
-
-    // audioStream.pipe(res);
+    const roomID = req.query.room;
+    const path = gameRooms.get(roomID).round.filepath;
 
     const headers = {
         "Content-Type" : "audio/ogg",
@@ -208,7 +221,7 @@ app.get('/audio', (req, res) => {
 
     res.set(headers);
 
-    res.sendFile('/home/max/development/aniquiz-io/resources/openings/input.ogg');
+    res.sendFile(path, { root: __dirname +  '/../' });
 
 });
 
@@ -250,6 +263,15 @@ io.on('connect', (socket) => {
 
     });
 
+    socket.on('ready-up', () => {
+
+        const game = gameRooms.get(socket.data.player.room);
+        const player = game.players.find(e => e.id == socket.id);
+        player.ready = true;
+        game.playersReady();
+
+    });
+    
     socket.on('init-game', (settings) => {
 
         if(!socket.data.player.host) return;
@@ -268,7 +290,12 @@ io.on('connect', (socket) => {
 
         const game = gameRooms.get(socket.data.player.room);
 
-        if(game.round.active)  game.checkGuess(socket.id, chat);
+        if(game.round.active)  game.checkGuess(
+            socket.id, 
+            chat
+            .replace(/[^a-zA-Z]/g, '')
+            .toLowerCase()
+        );
 
         io.in(socket.data.player.room).emit('new-chat', {
             sender: socket.data.player.username,
@@ -279,6 +306,16 @@ io.on('connect', (socket) => {
 
 });
 
-server.listen(port, () => {
-    console.log(`listening on port ${port}`);
-});
+const start = async() => {
+    try {
+        await mongoose.connect('mongodb://localhost:27017/anime');
+        server.listen(port, () => {
+            console.log(`listening on port ${port}`);
+        });
+    } catch(err) {
+        console.error(err);
+    }
+}
+
+start();
+
